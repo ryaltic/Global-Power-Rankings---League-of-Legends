@@ -4,7 +4,7 @@
 -- person_id = Players.OverviewPage, tournament_id = Tournaments.OverviewPage,
 -- match_id = MatchId, game_id = GameId.
 
-CREATE TABLE region_map (
+CREATE TABLE IF NOT EXISTS region_map (
     league        VARCHAR,
     year          INTEGER,
     region        VARCHAR,
@@ -12,7 +12,7 @@ CREATE TABLE region_map (
     PRIMARY KEY (league, year)
 );
 
-CREATE TABLE teams (
+CREATE TABLE IF NOT EXISTS teams (
     team_id         VARCHAR PRIMARY KEY,
     canonical_name  VARCHAR NOT NULL,
     short           VARCHAR,
@@ -24,7 +24,7 @@ CREATE TABLE teams (
     renamed_to      VARCHAR
 );
 
-CREATE TABLE people (
+CREATE TABLE IF NOT EXISTS people (
     person_id     VARCHAR PRIMARY KEY,
     handle        VARCHAR NOT NULL,
     real_name     VARCHAR,
@@ -36,7 +36,7 @@ CREATE TABLE people (
     is_substitute BOOLEAN
 );
 
-CREATE TABLE tournaments (
+CREATE TABLE IF NOT EXISTS tournaments (
     tournament_id  VARCHAR PRIMARY KEY,
     overview_page  VARCHAR,
     league         VARCHAR,
@@ -48,7 +48,7 @@ CREATE TABLE tournaments (
     FOREIGN KEY (league, year) REFERENCES region_map (league, year)
 );
 
-CREATE TABLE matches (
+CREATE TABLE IF NOT EXISTS matches (
     match_id       VARCHAR PRIMARY KEY,
     tournament_id  VARCHAR REFERENCES tournaments (tournament_id),
     datetime_utc   TIMESTAMP,
@@ -63,7 +63,7 @@ CREATE TABLE matches (
     winner_id      VARCHAR REFERENCES teams (team_id)
 );
 
-CREATE TABLE games (
+CREATE TABLE IF NOT EXISTS games (
     game_id                VARCHAR PRIMARY KEY,
     match_id               VARCHAR REFERENCES matches (match_id),
     riot_platform_game_id  VARCHAR,
@@ -81,13 +81,13 @@ CREATE TABLE games (
     length_s               INTEGER
 );
 
-CREATE TABLE champions (
+CREATE TABLE IF NOT EXISTS champions (
     champion    VARCHAR PRIMARY KEY,
     attributes  VARCHAR[],  -- class tags
     resource    VARCHAR
 );
 
-CREATE TABLE game_draft (
+CREATE TABLE IF NOT EXISTS game_draft (
     game_id    VARCHAR REFERENCES games (game_id),
     team_id    VARCHAR REFERENCES teams (team_id),
     action     VARCHAR,   -- pick or ban
@@ -97,7 +97,7 @@ CREATE TABLE game_draft (
     PRIMARY KEY (game_id, team_id, action, slot)
 );
 
-CREATE TABLE rosters (
+CREATE TABLE IF NOT EXISTS rosters (
     roster_id      VARCHAR PRIMARY KEY,
     team_id        VARCHAR REFERENCES teams (team_id),
     top            VARCHAR REFERENCES people (person_id),
@@ -110,7 +110,7 @@ CREATE TABLE rosters (
     last_game      DATE
 );
 
-CREATE TABLE game_team_stats (
+CREATE TABLE IF NOT EXISTS game_team_stats (
     game_id            VARCHAR REFERENCES games (game_id),
     team_id            VARCHAR REFERENCES teams (team_id),
     side               VARCHAR,
@@ -128,7 +128,7 @@ CREATE TABLE game_team_stats (
     PRIMARY KEY (game_id, team_id)
 );
 
-CREATE TABLE player_games (
+CREATE TABLE IF NOT EXISTS player_games (
     game_id           VARCHAR,
     person_id         VARCHAR REFERENCES people (person_id),
     team_id           VARCHAR,
@@ -146,20 +146,20 @@ CREATE TABLE player_games (
     FOREIGN KEY (game_id, team_id) REFERENCES game_team_stats (game_id, team_id)
 );
 
-CREATE TABLE team_aliases (
+CREATE TABLE IF NOT EXISTS team_aliases (
     alias           VARCHAR PRIMARY KEY,
     team_id         VARCHAR REFERENCES teams (team_id),
     change_type     VARCHAR,  -- rename or slot sale
     effective_date  DATE
 );
 
-CREATE TABLE person_aliases (
+CREATE TABLE IF NOT EXISTS person_aliases (
     alias           VARCHAR PRIMARY KEY,
     person_id       VARCHAR REFERENCES people (person_id),
     effective_date  DATE
 );
 
-CREATE TABLE tenures (
+CREATE TABLE IF NOT EXISTS tenures (
     person_id      VARCHAR REFERENCES people (person_id),
     team_id        VARCHAR REFERENCES teams (team_id),
     date_join      DATE,
@@ -170,7 +170,7 @@ CREATE TABLE tenures (
     PRIMARY KEY (person_id, team_id, date_join)
 );
 
-CREATE TABLE tournament_participants (
+CREATE TABLE IF NOT EXISTS tournament_participants (
     tournament_id  VARCHAR REFERENCES tournaments (tournament_id),
     team_id        VARCHAR REFERENCES teams (team_id),
     person_id      VARCHAR REFERENCES people (person_id),
@@ -179,7 +179,7 @@ CREATE TABLE tournament_participants (
     PRIMARY KEY (tournament_id, team_id, person_id)
 );
 
-CREATE TABLE team_placements (
+CREATE TABLE IF NOT EXISTS team_placements (
     tournament_id   VARCHAR REFERENCES tournaments (tournament_id),  -- TournamentResults.RosterPage
     team_id         VARCHAR REFERENCES teams (team_id),
     event_name      VARCHAR,  -- e.g. 'Worlds 2025'
@@ -191,7 +191,7 @@ CREATE TABLE team_placements (
     PRIMARY KEY (tournament_id, team_id)
 );
 
-CREATE TABLE individual_awards (
+CREATE TABLE IF NOT EXISTS individual_awards (
     person_id      VARCHAR REFERENCES people (person_id),
     tournament_id  VARCHAR REFERENCES tournaments (tournament_id),
     award_type     VARCHAR,  -- normalized, e.g. all_pro_1, mvp, finals_mvp, best_coach
@@ -201,7 +201,7 @@ CREATE TABLE individual_awards (
     PRIMARY KEY (person_id, tournament_id, award_type)
 );
 
-CREATE TABLE ratings_history (
+CREATE TABLE IF NOT EXISTS ratings_history (
     team_id        VARCHAR REFERENCES teams (team_id),
     as_of_date     DATE,
     team_type      VARCHAR,  -- club or national
@@ -213,7 +213,7 @@ CREATE TABLE ratings_history (
     PRIMARY KEY (team_id, as_of_date)
 );
 
-CREATE TABLE person_ratings_history (
+CREATE TABLE IF NOT EXISTS person_ratings_history (
     person_id    VARCHAR REFERENCES people (person_id),
     as_of_date   DATE,
     rating_type  VARCHAR,  -- player or coach
@@ -225,7 +225,7 @@ CREATE TABLE person_ratings_history (
 );
 
 -- Future state: national teams
-CREATE TABLE national_selections (
+CREATE TABLE IF NOT EXISTS national_selections (
     tournament_id         VARCHAR REFERENCES tournaments (tournament_id),
     nation_team_id        VARCHAR REFERENCES teams (team_id),
     person_id             VARCHAR REFERENCES people (person_id),

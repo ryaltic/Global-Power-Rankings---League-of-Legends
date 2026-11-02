@@ -5,7 +5,7 @@
 
 CREATE SCHEMA IF NOT EXISTS raw;
 
-CREATE TABLE raw.leagues (
+CREATE TABLE IF NOT EXISTS raw.leagues (
     League        VARCHAR PRIMARY KEY,
     League_Short  VARCHAR,
     Region        VARCHAR,   -- current region only; use Tournaments.Region for history
@@ -13,7 +13,7 @@ CREATE TABLE raw.leagues (
     IsOfficial    VARCHAR    -- 'Yes' / 'No' text
 );
 
-CREATE TABLE raw.tournaments (
+CREATE TABLE IF NOT EXISTS raw.tournaments (
     OverviewPage      VARCHAR PRIMARY KEY,
     Name              VARCHAR,
     StandardName      VARCHAR,
@@ -35,7 +35,7 @@ CREATE TABLE raw.tournaments (
     AlternativeNames  VARCHAR    -- list, ',' delimited
 );
 
-CREATE TABLE raw.match_schedule (
+CREATE TABLE IF NOT EXISTS raw.match_schedule (
     MatchId            VARCHAR PRIMARY KEY,
     OverviewPage       VARCHAR,
     Team1              VARCHAR,   -- series Team1; NOT the same as game Team1
@@ -58,7 +58,7 @@ CREATE TABLE raw.match_schedule (
     DisabledChampions  VARCHAR    -- list, ',' delimited
 );
 
-CREATE TABLE raw.match_schedule_game (
+CREATE TABLE IF NOT EXISTS raw.match_schedule_game (
     GameId              VARCHAR PRIMARY KEY,
     MatchId             VARCHAR,
     OverviewPage        VARCHAR,
@@ -78,7 +78,7 @@ CREATE TABLE raw.match_schedule_game (
     RiotPlatformGameId  VARCHAR
 );
 
-CREATE TABLE raw.scoreboard_games (
+CREATE TABLE IF NOT EXISTS raw.scoreboard_games (
     GameId              VARCHAR PRIMARY KEY,
     MatchId             VARCHAR,
     OverviewPage        VARCHAR,
@@ -96,7 +96,7 @@ CREATE TABLE raw.scoreboard_games (
     RiotPlatformGameId  VARCHAR    -- empty for LPL and some Chinese-hosted events
 );
 
-CREATE TABLE raw.scoreboard_teams (
+CREATE TABLE IF NOT EXISTS raw.scoreboard_teams (
     GameTeamId    VARCHAR PRIMARY KEY,
     GameId        VARCHAR,
     MatchId       VARCHAR,
@@ -126,7 +126,7 @@ CREATE TABLE raw.scoreboard_teams (
     Inhibitors    INTEGER
 );
 
-CREATE TABLE raw.scoreboard_players (
+CREATE TABLE IF NOT EXISTS raw.scoreboard_players (
     GameRoleId         VARCHAR PRIMARY KEY,
     GameId             VARCHAR,
     GameTeamId         VARCHAR,
@@ -153,7 +153,7 @@ CREATE TABLE raw.scoreboard_players (
     DateTime_UTC       TIMESTAMP
 );
 
-CREATE TABLE raw.picks_and_bans (
+CREATE TABLE IF NOT EXISTS raw.picks_and_bans (
     GameId                 VARCHAR PRIMARY KEY,
     MatchId                VARCHAR,
     OverviewPage           VARCHAR,
@@ -173,15 +173,16 @@ CREATE TABLE raw.picks_and_bans (
     IsComplete             BOOLEAN
 );
 
-CREATE TABLE raw.postgame_json_metadata (
+CREATE TABLE IF NOT EXISTS raw.postgame_json_metadata (
     GameId              VARCHAR PRIMARY KEY,
+    OverviewPage        VARCHAR,
     RiotPlatformGameId  VARCHAR,
     StatsPage           VARCHAR,   -- e.g. 'V5 data:LOLTMNT02 375568'
     TimelinePage        VARCHAR    -- per-minute gold/xp/cs; source of *_at_15 stats
 );
 
 -- Stats at 10/15 minutes, extracted from each TimelinePage (one row per player per game).
-CREATE TABLE raw.timeline_player_frames (
+CREATE TABLE IF NOT EXISTS raw.timeline_player_frames (
     GameId         VARCHAR,
     ParticipantId  INTEGER,   -- 1-5 blue, 6-10 red
     Minute         INTEGER,   -- 10 and 15
@@ -193,7 +194,7 @@ CREATE TABLE raw.timeline_player_frames (
     PRIMARY KEY (GameId, ParticipantId, Minute)
 );
 
-CREATE TABLE raw.teams (
+CREATE TABLE IF NOT EXISTS raw.teams (
     OverviewPage      VARCHAR PRIMARY KEY,
     Name              VARCHAR,
     Short             VARCHAR,
@@ -204,12 +205,12 @@ CREATE TABLE raw.teams (
     RenamedTo         VARCHAR
 );
 
-CREATE TABLE raw.team_redirects (
+CREATE TABLE IF NOT EXISTS raw.team_redirects (
     AllName    VARCHAR PRIMARY KEY,  -- alias as written in other tables
     _pageName  VARCHAR               -- target team page (OtherName is empty; do not use it)
 );
 
-CREATE TABLE raw.team_renames (
+CREATE TABLE IF NOT EXISTS raw.team_renames (
     Date          TIMESTAMP,
     OriginalName  VARCHAR,
     NewName       VARCHAR,
@@ -219,7 +220,7 @@ CREATE TABLE raw.team_renames (
     NewsId        VARCHAR
 );
 
-CREATE TABLE raw.players (
+CREATE TABLE IF NOT EXISTS raw.players (
     OverviewPage        VARCHAR PRIMARY KEY,  -- unique; ID is not (two players use ID 'Cube')
     ID                  VARCHAR,
     Player              VARCHAR,
@@ -238,13 +239,13 @@ CREATE TABLE raw.players (
     IsPersonality       BOOLEAN    -- casters/hosts; exclude from player tables
 );
 
-CREATE TABLE raw.player_redirects (
+CREATE TABLE IF NOT EXISTS raw.player_redirects (
     AllName       VARCHAR PRIMARY KEY,
     OverviewPage  VARCHAR,
     ID            VARCHAR
 );
 
-CREATE TABLE raw.player_renames (
+CREATE TABLE IF NOT EXISTS raw.player_renames (
     Date          TIMESTAMP,
     OriginalName  VARCHAR,
     NewName       VARCHAR,
@@ -252,7 +253,7 @@ CREATE TABLE raw.player_renames (
     NewsId        VARCHAR
 );
 
-CREATE TABLE raw.tenures (
+CREATE TABLE IF NOT EXISTS raw.tenures (
     Player               VARCHAR,
     Team                 VARCHAR,   -- team name at the time (e.g. 'SK Telecom T1')
     DateJoin             DATE,
@@ -265,7 +266,7 @@ CREATE TABLE raw.tenures (
     IsCurrent            BOOLEAN
 );
 
-CREATE TABLE raw.roster_changes (
+CREATE TABLE IF NOT EXISTS raw.roster_changes (
     RosterChangeId  VARCHAR,
     Date_Sort       TIMESTAMP,
     Player          VARCHAR,
@@ -279,7 +280,7 @@ CREATE TABLE raw.roster_changes (
     NewsId          VARCHAR
 );
 
-CREATE TABLE raw.tournament_players (
+CREATE TABLE IF NOT EXISTS raw.tournament_players (
     OverviewPage    VARCHAR,   -- stage page; matches TournamentResults.RosterPage
     Team            VARCHAR,
     Link            VARCHAR,
@@ -288,7 +289,7 @@ CREATE TABLE raw.tournament_players (
     N_PlayerInTeam  INTEGER
 );
 
-CREATE TABLE raw.tournament_results (
+CREATE TABLE IF NOT EXISTS raw.tournament_results (
     OverviewPage   VARCHAR,   -- event page, e.g. '2025 Season World Championship'
     RosterPage     VARCHAR,   -- stage page where the roster is listed
     Event          VARCHAR,
@@ -304,7 +305,7 @@ CREATE TABLE raw.tournament_results (
     Showmatch      BOOLEAN
 );
 
-CREATE TABLE raw.individual_achievements (
+CREATE TABLE IF NOT EXISTS raw.individual_achievements (
     Player           VARCHAR,
     Link             VARCHAR,   -- almost always empty; map Player via player_redirects
     Team             VARCHAR,
@@ -315,9 +316,17 @@ CREATE TABLE raw.individual_achievements (
     AchievementType  VARCHAR
 );
 
-CREATE TABLE raw.champions (
+CREATE TABLE IF NOT EXISTS raw.champions (
     Name        VARCHAR PRIMARY KEY,
     Attributes  VARCHAR,   -- list, ',' delimited (class tags)
     Resource    VARCHAR,
     ReleaseDate DATE
+);
+
+-- One row per table per pull, so refreshes know what was fetched and when.
+CREATE TABLE IF NOT EXISTS raw.pull_log (
+    table_name  VARCHAR,
+    scope       VARCHAR,   -- e.g. the tournament OverviewPage
+    pulled_at   TIMESTAMP,
+    row_count   INTEGER
 );
