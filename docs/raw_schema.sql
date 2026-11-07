@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS raw.picks_and_bans (
 );
 
 CREATE TABLE IF NOT EXISTS raw.postgame_json_metadata (
-    GameId              VARCHAR PRIMARY KEY,
+    GameId              VARCHAR,   -- not unique: remade games can have 2 rows
     OverviewPage        VARCHAR,
     RiotPlatformGameId  VARCHAR,
     StatsPage           VARCHAR,   -- e.g. 'V5 data:LOLTMNT02 375568'
