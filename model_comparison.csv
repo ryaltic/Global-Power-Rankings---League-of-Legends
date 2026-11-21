@@ -1,0 +1,6 @@
+model,brier_score,log_loss_score,n_games
+coin_flip,0.25,0.6931471805599452,904
+model,brier_score,log_loss_score,n_games
+blue_side_rate,0.24574406680592845,0.6846248373150988,904
+model,brier_score,log_loss_score,n_games
+elo_k20,0.22713881676390357,0.6460714318672561,904
